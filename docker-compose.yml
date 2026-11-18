@@ -1,0 +1,42 @@
+services:
+  web:
+    build: .
+    container_name: livora-web
+    ports:
+      - "${APP_PORT:-8080}:80"
+    environment:
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-livora_db}
+      DB_USER: ${DB_USER:-livora_user}
+      DB_PASS: ${DB_PASS:-change_this_local_password}
+      AWS_REGION: ${AWS_REGION:-ap-south-1}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET:-}
+    volumes:
+      - livora_uploads:/var/www/html/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    container_name: livora-mysql
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-livora_db}
+      MYSQL_USER: ${DB_USER:-livora_user}
+      MYSQL_PASSWORD: ${DB_PASS:-change_this_local_password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change_this_root_password}
+    volumes:
+      - livora_mysql_data:/var/lib/mysql
+      - ./database_setup.sql:/docker-entrypoint-initdb.d/01-livora.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-change_this_root_password}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+volumes:
+  livora_mysql_data:
+  livora_uploads:

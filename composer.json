@@ -1,0 +1,9 @@
+{
+  "name": "livora/cloud-platform",
+  "description": "Livora roommate and domestic services platform with optional Amazon S3 storage",
+  "type": "project",
+  "require": {
+    "php": ">=8.1",
+    "aws/aws-sdk-php": "^3.300"
+  }
+}
